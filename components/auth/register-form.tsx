@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from "@/store/auth-store"
-import { toast } from "sonner"
-import { Loader2, Eye, EyeOff } from "lucide-react"
+import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const registerSchema = z
   .object({
@@ -32,6 +32,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const register_user = useAuthStore((state) => state.register)
 
   const {
@@ -44,21 +45,21 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
+    setErrorMessage(null)
 
     try {
       await register_user(data.name, data.email, data.password)
-      toast.success("Cuenta creada exitosamente", {
-        description: "Bienvenido a EduSupplies",
-      })
       router.push("/")
       router.refresh()
     } catch (error) {
-      toast.error("Error al crear la cuenta", {
-        description: "Por favor intenta nuevamente",
-      })
+      setErrorMessage("Error al crear la cuenta. Por favor intenta nuevamente")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const onError = () => {
+    setErrorMessage("Por favor corrige los errores en el formulario")
   }
 
   return (
@@ -67,8 +68,15 @@ export function RegisterForm() {
         <CardTitle>Crear Cuenta</CardTitle>
         <CardDescription>Completa el formulario para crear tu cuenta</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onError)}>
         <CardContent className="space-y-4">
+          {errorMessage && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="name">Nombre completo</Label>
             <Input
