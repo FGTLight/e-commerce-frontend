@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from "@/store/auth-store"
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -24,7 +24,6 @@ export function LoginForm() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const login = useAuthStore((state) => state.login)
 
   const {
@@ -37,21 +36,21 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
-    setErrorMessage(null)
 
     try {
       await login(data.email, data.password)
+      toast.success("Sesión iniciada correctamente", {
+        description: "Bienvenido de nuevo",
+      })
       router.push("/")
       router.refresh()
     } catch (error) {
-      setErrorMessage("Verifica tus credenciales e intenta nuevamente")
+      toast.error("Error al iniciar sesión", {
+        description: "Verifica tus credenciales e intenta nuevamente",
+      })
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const onError = () => {
-    setErrorMessage("Por favor corrige los errores en el formulario")
   }
 
   return (
@@ -60,15 +59,8 @@ export function LoginForm() {
         <CardTitle>Iniciar Sesión</CardTitle>
         <CardDescription>Ingresa tus credenciales para acceder a tu cuenta</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit, onError)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-          {errorMessage && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

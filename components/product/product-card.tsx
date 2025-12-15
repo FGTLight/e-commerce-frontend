@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import Link from "next/link"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Star } from "lucide-react"
 import type { Product } from "@/types"
 import { useCartStore } from "@/store/cart-store"
+import { toast } from "sonner"
 
 interface ProductCardProps {
   product: Product
@@ -19,9 +21,10 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     addItem(product)
+    toast.success(`${product.name} agregado al carrito`, {
+      description: "Puedes continuar comprando o ir al carrito",
+    })
   }
-
-  const discountedPrice = product.discount ? product.price * (1 - product.discount / 100) : product.price
 
   return (
     <Link href={`/product/${product.slug}`}>
@@ -33,12 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
               alt={product.name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
             />
-            {product.discount && product.discount > 0 && (
-              <Badge variant="destructive" className="absolute left-2 top-2 text-xs font-bold">
-                -{product.discount}%
-              </Badge>
-            )}
-            {product.stock < 10 && product.stock > 0 && !product.discount && (
+            {product.stock < 10 && product.stock > 0 && (
               <Badge variant="destructive" className="absolute right-2 top-2">
                 Solo {product.stock} disponibles
               </Badge>
@@ -62,15 +60,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
           <div className="flex w-full items-center justify-between gap-2">
-            <div className="flex flex-col">
-              {product.discount && product.discount > 0 ? (
-                <>
-                  <div className="text-2xl font-bold text-primary">${discountedPrice.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</div>
-                </>
-              ) : (
-                <div className="text-2xl font-bold">${product.price.toFixed(2)}</div>
-              )}
+            <div>
+              <div className="text-2xl font-bold">${product.price.toFixed(2)}</div>
             </div>
             <Button
               size="sm"
@@ -87,5 +78,3 @@ export function ProductCard({ product }: ProductCardProps) {
     </Link>
   )
 }
-
-export default ProductCard
